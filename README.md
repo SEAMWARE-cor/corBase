@@ -201,6 +201,7 @@ bool  corStringInArray(const char* s, char** v);                     // corStrin
 char* corSizeText(uint64_t bytes, char* buf, int bufSize);           // corSizeText.h - "4096 MiB", "64 KiB", "512 B": whole units, rounded down, up to MiB
 int   corFileReadInto(const char* path, char* buf, int bufSize);     // corFileReadInto.h - a small file (/proc, /sys) into buf, NUL-terminated; bytes read or -1
 uint32_t corCrc32c(uint32_t crc, const void* buf, size_t len);       // corCrc32c.h - CRC-32C, from crc (0 to start); the CPU instruction where there is one
+int   corBase64UrlDecode(const char* in, int len, unsigned char* out);   // corBase64UrlDecode.h - base64url (RFC 4648 § 5), padding optional; bytes decoded, -1: not base64url
 ```
 
 ### Credentials in Logs
