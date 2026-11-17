@@ -25,7 +25,8 @@
 #include "corBase/corBaseInit.h"             // corBaseInit
 #include "corBase/corCo.h"                   // corCoCreate, corCoResume, corCoYield, ...
 #include "corBase/corCoLoop.h"
-#include "corBase/corCrc32c.h"               // corCoLoopInit, corCoLoopWait, ...
+#include "corBase/corCrc32c.h"               // corCrc32c
+#include "corBase/corBase64UrlDecode.h"      // corBase64UrlDecode
 #include "corBase/corDaemonize.h"            // corDaemonize
 #include "corBase/corFloatTrim.h"            // corFloatTrim
 #include "corBase/corLibLog.h"            // COR_LIB_*
@@ -649,6 +650,13 @@ int main(void)
   for (int i = 0; i < 1000; i++) big[i] = (char) (i * 7);
   uint32_t whole = corCrc32c(0, big, 1000);
   check((whole == corCrc32c(corCrc32c(0, big, 333), big + 333, 667)) && (whole != corCrc32c(0, big, 999)), "corCrc32c: 1000 bytes, split anywhere - and one byte less differs");
+
+  unsigned char b64[16];
+  check((corBase64UrlDecode("eyJhIjoxfQ", 10, b64) == 7) && (memcmp(b64, "{\"a\":1}", 7) == 0), "corBase64UrlDecode: no padding");
+  check((corBase64UrlDecode("eyJhIjoxfQ==", 12, b64) == 7) && (memcmp(b64, "{\"a\":1}", 7) == 0), "corBase64UrlDecode: padding taken");
+  check((corBase64UrlDecode("-_8", 3, b64) == 2) && (b64[0] == 0xFB) && (b64[1] == 0xFF), "corBase64UrlDecode: - and _");
+  check(corBase64UrlDecode("ab$d", 4, b64) == -1, "corBase64UrlDecode: not base64url");
+  check(corBase64UrlDecode("abcde", 5, b64) == -1, "corBase64UrlDecode: a length no encoding has");
 
   char sizeBuf[32];
   check(strcmp(corSizeText(64 * 1024 * 1024, sizeBuf, sizeof(sizeBuf)), "64 MiB") == 0, "corSizeText: 64 MiB");

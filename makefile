@@ -51,6 +51,7 @@ LIB_SOURCES   = corBaseInit.c          \
                 corCo.c                \
                 corCoLoop.c            \
                 corCrc32c.c            \
+                corBase64UrlDecode.c   \
                 corDaemonize.c         \
                 corUriPasswordMask.c   \
                 corHeaderIsCredential.c
