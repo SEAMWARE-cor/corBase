@@ -57,7 +57,8 @@ LIB_SOURCES   = corBaseInit.c          \
                 corHeaderIsCredential.c \
                 corLinux.c             \
                 corExePath.c           \
-                corFileMtimeNs.c
+                corFileMtimeNs.c       \
+                corLanguageTagWellFormed.c
 
 BUILD        ?= debug
 
