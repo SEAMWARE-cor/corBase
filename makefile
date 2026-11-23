@@ -58,6 +58,7 @@ LIB_SOURCES   = corBaseInit.c          \
                 corLinux.c             \
                 corExePath.c           \
                 corFileMtimeNs.c       \
+                corCollate.c \
                 corLanguageTagWellFormed.c
 
 BUILD        ?= debug
