@@ -258,7 +258,16 @@ static void corCoTest(void)
   }
   int status = 0;
   waitpid(pid, &status, 0);
-  check(WIFSIGNALED(status) && (WTERMSIG(status) == SIGSEGV), "corCo: a stack overflow is a SIGSEGV on the guard page");
+#if defined(__APPLE__)
+  int guardSignal = SIGBUS;                      // macOS: a protected page is a bus error
+#else
+  int guardSignal = SIGSEGV;
+#endif
+  if (WIFSIGNALED(status) == 0)
+    printf("      corCo: the runaway coroutine's process ended without a signal (status %d)\n", status);
+  else if (WTERMSIG(status) != guardSignal)
+    printf("      corCo: the runaway coroutine's process ended with signal %d, not %d\n", WTERMSIG(status), guardSignal);
+  check(WIFSIGNALED(status) && (WTERMSIG(status) == guardSignal), "corCo: a stack overflow is caught by the guard page (SIGSEGV; macOS SIGBUS)");
 
   //
   // The pool: 100 000 coroutines created and finished - the same few stacks, no mmap each
