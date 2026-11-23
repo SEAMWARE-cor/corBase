@@ -94,11 +94,12 @@ static bool hardware(void)
 // crcHardware - the ARMv8 CRC extension, eight bytes an instruction
 //
 #if defined(__APPLE__)
-static uint32_t crcHardware                                    // Apple silicon: the CRC extension is in the base ISA
+#define CRC_TARGET                                             // Apple silicon: the CRC extension is in the base ISA
 #else
-__attribute__((target("+crc")))
-static uint32_t crcHardware
-#endif(uint32_t crc, const unsigned char* p, size_t len)
+#define CRC_TARGET  __attribute__((target("+crc")))
+#endif
+CRC_TARGET
+static uint32_t crcHardware(uint32_t crc, const unsigned char* p, size_t len)
 {
   for (; len >= 8; p += 8, len -= 8)
   {
