@@ -56,7 +56,8 @@ LIB_SOURCES   = corBaseInit.c          \
                 corUriPasswordMask.c   \
                 corHeaderIsCredential.c \
                 corLinux.c             \
-                corExePath.c
+                corExePath.c           \
+                corFileMtimeNs.c
 
 BUILD        ?= debug
 
