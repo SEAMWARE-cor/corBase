@@ -7,6 +7,10 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
+#if defined(__linux__)
+#define _DEFAULT_SOURCE                          // clock_gettime under a strict -std=c17
+#endif
+
 #include <errno.h>                      // errno, ENOENT, ECANCELED
 #include <poll.h>                       // poll, POLLIN, POLLOUT
 #include <stdbool.h>                    // bool
@@ -15,9 +19,8 @@
 #include <time.h>                       // clock_gettime
 #include <pthread.h>                    // pthread_create
 #include <unistd.h>                     // write, close
-#include <sys/eventfd.h>                // eventfd
-#include <sys/epoll.h>                  // epoll_ctl
 
+#include "corBase/corLinux.h"           // epoll_ctl, eventfd, corEventfdSignal, corEventfdClose (macOS: kqueue)
 #include "corBase/corCo.h"              // corCoCurrent, corCoYield, corCoResume
 #include "corBase/corCoLoop.h"          // Own interface
 
@@ -358,11 +361,10 @@ typedef struct Blocking
 
 static void* blockingThread(void* p)
 {
-  Blocking* bP  = (Blocking*) p;
-  uint64_t  one = 1;
+  Blocking* bP = (Blocking*) p;
 
   bP->fn(bP->arg);
-  (void) !write(bP->efd, &one, sizeof(one));      // the last touch of *bP: the coroutine may free it now
+  corEventfdSignal(bP->efd);                      // the last touch of *bP: the coroutine may free it now
   return NULL;
 }
 
@@ -398,7 +400,7 @@ void corCoBlocking(void (*fn)(void*), void* arg)
 
   if (r != 0)
   {
-    close(b.efd);
+    corEventfdClose(b.efd);
     fn(arg);
     return;
   }
@@ -421,7 +423,7 @@ void corCoBlocking(void (*fn)(void*), void* arg)
       ;
   }
 
-  close(b.efd);
+  corEventfdClose(b.efd);
 }
 
 

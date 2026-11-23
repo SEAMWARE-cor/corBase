@@ -41,6 +41,21 @@
 //
 extern void corCoSwitch(void** fromSpP, void* toSp);
 
+//
+// The symbol's frame: ELF names it and gives it a type and a size; Mach-O (macOS) names it with a leading
+// underscore and has neither - and wants arm64 code 4-aligned
+//
+#if defined(__APPLE__)
+#define CO_SWITCH_BEGIN  "  .p2align 2\n  .globl  _corCoSwitch\n_corCoSwitch:\n"
+#define CO_SWITCH_END    ""
+#elif defined(__x86_64__)
+#define CO_SWITCH_BEGIN  "  .globl  corCoSwitch\n  .type   corCoSwitch, @function\ncorCoSwitch:\n"
+#define CO_SWITCH_END    "  .size   corCoSwitch, .-corCoSwitch\n"
+#else
+#define CO_SWITCH_BEGIN  "  .p2align 2\n  .globl  corCoSwitch\n  .type   corCoSwitch, %function\ncorCoSwitch:\n"
+#define CO_SWITCH_END    "  .size   corCoSwitch, .-corCoSwitch\n"
+#endif
+
 #if defined(__x86_64__)
 //
 // System V AMD64: rbx, rbp, r12-r15 callee-saved, plus the SSE control/status word (mxcsr) and the
@@ -52,9 +67,7 @@ extern void corCoSwitch(void** fromSpP, void* toSp);
 //
 __asm__(
   "  .text\n"
-  "  .globl  corCoSwitch\n"
-  "  .type   corCoSwitch, @function\n"
-  "corCoSwitch:\n"
+  CO_SWITCH_BEGIN
   "  pushq   %rbp\n"
   "  pushq   %rbx\n"
   "  pushq   %r12\n"
@@ -76,7 +89,7 @@ __asm__(
   "  popq    %rbx\n"
   "  popq    %rbp\n"
   "  ret\n"
-  "  .size   corCoSwitch, .-corCoSwitch\n"
+  CO_SWITCH_END
 );
 #elif defined(__aarch64__)
 //
@@ -90,9 +103,7 @@ __asm__(
 //
 __asm__(
   "  .text\n"
-  "  .globl  corCoSwitch\n"
-  "  .type   corCoSwitch, %function\n"
-  "corCoSwitch:\n"
+  CO_SWITCH_BEGIN
   "  sub     sp, sp, #160\n"
   "  stp     x19, x20, [sp, #0]\n"
   "  stp     x21, x22, [sp, #16]\n"
@@ -119,7 +130,7 @@ __asm__(
   "  ldp     d14, d15, [sp, #144]\n"
   "  add     sp, sp, #160\n"
   "  ret\n"
-  "  .size   corCoSwitch, .-corCoSwitch\n"
+  CO_SWITCH_END
 );
 #else
 #error "corCo: no context switch for this architecture (x86-64 and aarch64 only)"
@@ -132,6 +143,11 @@ __asm__(
 // The stack: CORCO_STACK_SIZE of address space, the lowest page of it the guard
 //
 #define CORCO_STACK_SIZE   (256 * 1024)
+#if defined(MAP_STACK)
+#define CO_MAP_STACK       MAP_STACK
+#else
+#define CO_MAP_STACK       0                            // macOS: no such flag
+#endif
 #define CORCO_POOL_MAX     256                          // stacks kept per thread beyond that are unmapped
 
 
@@ -231,7 +247,7 @@ static void* frameBuild(char* top)
 //
 static char* stackMap(void)
 {
-  char* p = mmap(NULL, CORCO_STACK_SIZE, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_NORESERVE | MAP_STACK, -1, 0);
+  char* p = mmap(NULL, CORCO_STACK_SIZE, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_NORESERVE | CO_MAP_STACK, -1, 0);
 
   if (p == MAP_FAILED)
     return NULL;

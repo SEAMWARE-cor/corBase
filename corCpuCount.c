@@ -92,10 +92,13 @@ static int cgroupQuota(void)
 int corCpuCount(void)
 {
   int       cpus = 0;
+
+#if defined(__linux__)
   cpu_set_t set;
 
   if (sched_getaffinity(0, sizeof(set), &set) == 0)
     cpus = CPU_COUNT(&set);
+#endif
 
   if (cpus <= 0)
   {
