@@ -54,7 +54,9 @@ LIB_SOURCES   = corBaseInit.c          \
                 corBase64UrlDecode.c   \
                 corDaemonize.c         \
                 corUriPasswordMask.c   \
-                corHeaderIsCredential.c
+                corHeaderIsCredential.c \
+                corLinux.c             \
+                corExePath.c
 
 BUILD        ?= debug
 
@@ -73,7 +75,7 @@ DEPS          = $(OBJECTS:.o=.d) $(OBJDIR)/corBaseTest.d
 # It stays in obj/: it is not a tool, and nothing installs it.
 #
 TEST          = $(OBJDIR)/corBaseTest
-TEST_LIBS     = -lrt -lm
+TEST_LIBS     = -lm                                  # clock_gettime is in libc (glibc 2.17); macOS has no librt
 
 #
 # The tools - small number converters (hex/ascii/int), one source file each.

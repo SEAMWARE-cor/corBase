@@ -16,7 +16,6 @@
 #include <time.h>                            // clock_gettime
 #include <unistd.h>                          // fork, _exit
 #include <sys/wait.h>                        // waitpid
-#include <sys/epoll.h>                       // epoll_create1, epoll_wait
 #include <poll.h>                            // POLLIN
 #include <errno.h>                           // errno, ECANCELED
 #include <sys/stat.h>                        // fstat, stat
@@ -25,6 +24,7 @@
 #include "corBase/corBaseInit.h"             // corBaseInit
 #include "corBase/corCo.h"                   // corCoCreate, corCoResume, corCoYield, ...
 #include "corBase/corCoLoop.h"
+#include "corBase/corLinux.h"                 // epoll_create1, epoll_wait (macOS: kqueue)
 #include "corBase/corCrc32c.h"               // corCrc32c
 #include "corBase/corBase64UrlDecode.h"      // corBase64UrlDecode
 #include "corBase/corDaemonize.h"            // corDaemonize
