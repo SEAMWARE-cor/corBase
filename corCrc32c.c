@@ -17,8 +17,10 @@
 #include <nmmintrin.h>                  // _mm_crc32_u8, _mm_crc32_u64
 #elif defined(__aarch64__)
 #include <arm_acle.h>                   // __crc32cb, __crc32cd
+#if defined(__linux__)
 #include <sys/auxv.h>                   // getauxval
 #include <asm/hwcap.h>                  // HWCAP_CRC32
+#endif
 #endif
 
 #include "corBase/corCrc32c.h"          // Own interface
@@ -91,8 +93,12 @@ static bool hardware(void)
 //
 // crcHardware - the ARMv8 CRC extension, eight bytes an instruction
 //
+#if defined(__APPLE__)
+static uint32_t crcHardware                                    // Apple silicon: the CRC extension is in the base ISA
+#else
 __attribute__((target("+crc")))
-static uint32_t crcHardware(uint32_t crc, const unsigned char* p, size_t len)
+static uint32_t crcHardware
+#endif(uint32_t crc, const unsigned char* p, size_t len)
 {
   for (; len >= 8; p += 8, len -= 8)
   {
@@ -110,7 +116,11 @@ static uint32_t crcHardware(uint32_t crc, const unsigned char* p, size_t len)
 
 static bool hardware(void)
 {
+#if defined(__APPLE__)
+  return true;                                                 // every Apple silicon CPU has it
+#else
   return (getauxval(AT_HWCAP) & HWCAP_CRC32) != 0;
+#endif
 }
 
 #else
