@@ -7,6 +7,10 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
+#if defined(__linux__)
+#define _DEFAULT_SOURCE                          // PATH_MAX under a strict -std=c17
+#endif
+
 #include <limits.h>                     // PATH_MAX
 #include <stdbool.h>                    // bool
 #include <stdio.h>                      // snprintf

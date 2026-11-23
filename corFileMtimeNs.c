@@ -7,6 +7,10 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
+#if defined(__linux__)
+#define _DEFAULT_SOURCE                          // st_mtim under a strict -std=c17
+#endif
+
 #include <sys/stat.h>                   // struct stat
 
 #include "corBase/corFileMtimeNs.h"     // Own interface

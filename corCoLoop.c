@@ -7,6 +7,10 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
+#if defined(__linux__)
+#define _DEFAULT_SOURCE                          // clock_gettime under a strict -std=c17
+#endif
+
 #include <errno.h>                      // errno, ENOENT, ECANCELED
 #include <poll.h>                       // poll, POLLIN, POLLOUT
 #include <stdbool.h>                    // bool
